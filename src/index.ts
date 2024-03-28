@@ -37,8 +37,8 @@ import { UserModel } from './models/user';
       origin: [
         'https://localhost:5173',
         'http://localhost:5173',
-        'https://olinkirk.land/foundry-item-collab',
-        'http://olinkirk.land/foundry-item-collab'
+        'https://olinkirk.land',
+        'http://olinkirk.land',
       ],
       credentials: true
     })
