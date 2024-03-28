@@ -38,7 +38,7 @@ import { UserModel } from './models/user';
         'https://localhost:5173',
         'http://localhost:5173',
         'https://olinkirk.land',
-        'http://olinkirk.land',
+        'http://olinkirk.land'
       ],
       credentials: true
     })
@@ -73,12 +73,9 @@ import { UserModel } from './models/user';
     res.json(await ItemModel.find());
   });
 
-  app.patch('/items/:id/owner', async (req, res) => {
-    const item = await ItemModel.findByIdAndUpdate(
-      req.params.id,
-      { owner: req.body.owner },
-      { new: true }
-    );
+  app.put('/items/:id/owner', async (req, res) => {
+    await ItemModel.updateOne({ id: req.params.id }, { owner: req.body.owner });
+    const item = await ItemModel.findOne({ id: req.params.id });
     res.json(item);
   });
 
