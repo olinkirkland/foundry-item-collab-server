@@ -43,6 +43,8 @@ import { UserModel } from './models/user';
     })
   );
 
+  app.get('/', (req, res) => res.send('Hello World!'));
+
   /**
    * Users
    */
