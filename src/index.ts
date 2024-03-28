@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
 import { processFoundryActor } from './foundry-parser';
-import { Item, ItemModel } from './models/item';
+import { ItemModel } from './models/item';
 import { UserModel } from './models/user';
 
 (async () => {
@@ -37,7 +37,8 @@ import { UserModel } from './models/user';
       origin: [
         'https://localhost:5173',
         'http://localhost:5173',
-        'https://olinkirk.land/foundry-item-collab'
+        'https://olinkirk.land/foundry-item-collab',
+        'http://olinkirk.land/foundry-item-collab'
       ],
       credentials: true
     })
@@ -70,6 +71,15 @@ import { UserModel } from './models/user';
 
   app.get('/items', async (req, res) => {
     res.json(await ItemModel.find());
+  });
+
+  app.patch('/items/:id/owner', async (req, res) => {
+    const item = await ItemModel.findByIdAndUpdate(
+      req.params.id,
+      { owner: req.body.owner },
+      { new: true }
+    );
+    res.json(item);
   });
 
   /**

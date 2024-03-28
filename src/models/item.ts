@@ -10,6 +10,8 @@ export type Item = {
   price: number;
   quantity: number;
   bulk: number;
+  flaggedForSale: boolean;
+  flaggedForPersonal: boolean;
 };
 
 export type ItemDocument = Item & mongoose.Document;

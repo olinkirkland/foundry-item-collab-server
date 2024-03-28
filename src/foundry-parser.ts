@@ -38,7 +38,9 @@ export async function processFoundryActor(actor: any) {
       quantity: foundryItem.system.quantity,
       bulk: currencySlugs.includes(foundryItem.slug)
         ? 0
-        : foundryItem.system.bulk.value
+        : foundryItem.system.bulk.value,
+      flaggedForSale: false,
+      flaggedForPersonal: currencySlugs.includes(foundryItem.slug) // Currency is always personal by default
     };
 
     await ItemModel.create(item);
