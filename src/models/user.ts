@@ -1,16 +1,14 @@
 import mongoose, { Schema } from 'mongoose';
 
 export type User = {
-  id: string;
-  username: string;
+  name: string;
   isGM: boolean; // Whether the user is a GM or not
 };
 
 export type UserDocument = User & mongoose.Document;
 
 const UserSchema = new Schema<UserDocument>({
-  id: String,
-  username: String,
+  name: String,
   isGM: Boolean
 });
 
