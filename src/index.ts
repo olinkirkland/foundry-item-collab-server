@@ -85,14 +85,16 @@ import { UserModel } from './models/user';
 
   app.post('/upload', async (req, res) => {
     console.log('Received Foundry file');
-    try {
-      const foundryFile = req.body;
-      await processFoundryActor(foundryFile);
-      console.log('-> ' + (await UserModel.countDocuments()) + ' users');
-      console.log('-> ' + (await ItemModel.countDocuments()) + ' items');
-      res.status(200).send();
-    } catch (e) {
-      console.error(e);
+    const foundryFile = req.body;
+    const errors = await processFoundryActor(foundryFile);
+    console.log('-> ' + (await UserModel.countDocuments()) + ' users');
+    console.log('-> ' + (await ItemModel.countDocuments()) + ' items');
+    if (errors.length == 0) res.status(200).send();
+    else {
+      console.log(
+        'Errors processing the file: ' + errors.map((e) => e.message).join(', ')
+      );
+      res.status(500).send(errors);
     }
   });
 
