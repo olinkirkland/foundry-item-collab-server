@@ -2,6 +2,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
+import { v4 as uuid } from 'uuid';
 import { processFoundryActor } from './foundry-parser';
 import { ItemModel } from './models/item';
 import { UserModel } from './models/user';
@@ -79,6 +80,35 @@ import { UserModel } from './models/user';
     res.json(item);
   });
 
+  app.post('/items/:id/split', async (req, res) => {
+    const oldQuantity = req.body.quantityA;
+    const newQuantity = req.body.quantityB;
+
+    const item = await ItemModel.findOne({ id: req.params.id });
+    if (!item) {
+      res.status(404).send('Item not found');
+      return;
+    }
+
+    // Update the original item's quantity
+    await ItemModel.updateOne({ id: req.params.id }, { quantity: oldQuantity });
+
+    // Duplicate the item and give it a unique id and the new quantity
+    try {
+      await ItemModel.create({
+        ...item.toObject(),
+        id: uuid(),
+        _id: new mongoose.Types.ObjectId(),
+        quantity: newQuantity
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).send('Error creating the new item');
+    }
+
+    res.status(200).send('Item split');
+  });
+
   /**
    * Import a JSON file that was created in Foundry VTT
    */
@@ -92,9 +122,9 @@ import { UserModel } from './models/user';
     if (errors.length == 0) res.status(200).send();
     else {
       console.log(
-        'Errors processing the file: ' + errors.map((e) => e.message).join(', ')
+        'Errors processing the file: ' + errors.map((e) => e).join(', ')
       );
-      res.status(500).send(errors);
+      res.status(400).send(errors);
     }
   });
 
