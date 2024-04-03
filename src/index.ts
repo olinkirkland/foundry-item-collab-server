@@ -4,7 +4,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { v4 as uuid } from 'uuid';
 import { processFoundryActor } from './foundry-parser';
-import { ItemModel } from './models/item';
+import { Item, ItemModel } from './models/item';
 import { UserModel } from './models/user';
 
 (async () => {
@@ -107,6 +107,55 @@ import { UserModel } from './models/user';
     }
 
     res.status(200).send('Item split');
+  });
+
+  app.post('/merge', async (req, res) => {
+    // Merge all items with the same name and owner
+    console.log('Merging all items...');
+    let queue: Item[] = await ItemModel.find();
+
+    // Find items with the same name and owner
+    const duplicateItems: Item[][] = [];
+    while (queue.length > 0) {
+      const item = queue.pop();
+      if (!item) continue; // This should never happen
+      const duplicates = queue.filter(
+        (i) => i.name === item.name && i.owner === item.owner
+      );
+      if (duplicates.length === 0) continue;
+      duplicateItems.push([item, ...duplicates]);
+      // Remove all duplicates from the queue
+      queue = queue.filter(
+        (i) => i.name !== item.name || i.owner !== item.owner
+      );
+    }
+
+    console.log('Found ' + duplicateItems.length + ' groups of duplicates');
+    console.log(
+      duplicateItems.map((d) => `${d[0].name} (${d.length})`).join(', ')
+    );
+
+    const mergeSummary = duplicateItems.map((d) => {
+      return {
+        name: d[0].name,
+        owner: d[0].owner,
+        quantity: d.reduce((acc, i) => acc + i.quantity, 0)
+      };
+    });
+
+    // Merge the items
+    for (const group of duplicateItems) {
+      const totalQuantity = group.reduce((acc, i) => acc + i.quantity, 0);
+      const firstItem = group[0];
+      await ItemModel.updateOne(
+        { id: firstItem.id },
+        { quantity: totalQuantity }
+      );
+      for (let i = 1; i < group.length; i++)
+        await ItemModel.deleteOne({ id: group[i].id });
+    }
+
+    res.status(200).json(mergeSummary);
   });
 
   /**
